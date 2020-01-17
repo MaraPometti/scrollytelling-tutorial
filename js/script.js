@@ -14,7 +14,9 @@ var onlyitalian;
 var filterData;
 var countsum;
 var topten;
-
+var g;
+var xaxes;
+var yaxes;
 
 // initializing scrollama
 var scroller = scrollama();
@@ -60,7 +62,6 @@ function init() {
 	/*.onStepExit(handleStepExit)*/
 }
 
-
  // d3 setup
 
 function setup () {
@@ -73,42 +74,55 @@ function setup () {
 		.attr("height", figure.node().getBoundingClientRect().height - 20 + "px")
 		.style("overflow", "visible")
 
+	g = svg.append("g");
+	g.append("g").attr("id", "x-axis")
+	g.append("g").attr("id", "y-axis")
+
+
+}
+
+function makeAxes(isScatter, yExtent, xExtent) {
+	if (isScatter == true) {
+		xaxes = d3.scaleLinear()
+					.range([0, figWidth])
+					.domain(xExtent)
+
+		yaxes = d3.scaleLinear()
+					.range([figHeight, 0])
+					.domain(yExtent)
+
+
+		d3.select("#x-axis").attr("transform", "translate(0," + figHeight + ")").call(d3.axisBottom(xaxes)) 
+		d3.select("#y-axis").attr("transform", "translate(20, 0)").call(d3.axisLeft(yaxes)) 
+
+	}
+	else {
+
+		xaxes = d3.scaleBand()
+				.rangeRound([0, figWidth])
+				.padding(0.5)
+				.domain(topten.map(d => d.key))
+
+		yaxes = d3.scaleLinear()
+				.range([figHeight, 0])
+				.domain(d3.extent(topten, d => d.value))
+
+	}
+
+
 }
 
 // drawing our first chart
 function drawScatterplott () {
 	
-	var g = svg.append("g");
+    makeAxes(true, d3.extent(onlyitalian, d => d["Height (cm)"]), d3.extent(onlyitalian, d => d["Width (cm)"]));
 
-	var xaxes = d3.scaleLinear()
-				.range([0, figWidth])
-				.domain(d3.extent(onlyitalian, d => d["Width (cm)"]))
-
-	var yaxes = d3.scaleLinear()
-				.range([figHeight, 0])
-				.domain(d3.extent(onlyitalian, d => d["Height (cm)"]))
-
-	g.append("g").attr("id", "x-axis").attr("transform", "translate(0," + figHeight + ")").call(d3.axisBottom(xaxes)) 
-	g.append("g").attr("id", "y-axis").attr("transform", "translate(20, 0)").call(d3.axisLeft(yaxes)) 
-
-
-		g.selectAll(".circle")
+	g.selectAll(".circle")
 		.data(onlyitalian)
-			.enter()
+		.enter()
 		.append("rect")
-		.attr("ry", (d) => { 
-			if ( d["Height (cm)"]) {
-				return  yaxes(d["Height (cm)"]) == 0 ? 10 : yaxes(d["Height (cm)"])
-			} 
-			if (true) {}
-
-
-		})
-		.attr("rx", (d) => { 
-			if ( d["Width (cm)"] ) {
-				return  xaxes(d["Width (cm)"])
-			} 
-		})
+		  .attr("ry", 10)
+		.attr("rx", 10)
 		.attr("y", (d) => { 
 			if ( d["Height (cm)"] ) {
 				return  yaxes(d["Height (cm)"])
@@ -127,58 +141,90 @@ function drawScatterplott () {
 		.ease(d3.easeBounce)
 		.duration(2000)
 	
-		//.attr("r", (figWidth > 500) ? 10 : 4) 
 
-		// function change () {
-				// if (figWidth > 50) then {
-					// do whatever
-				// } eles() {
-
-				// }
-			// }
-
-
-		// g.append("rect")
-		// .attr("class", "box")
-		// .attr("width", xaxes(200) + "px")
-		// .attr("height", yaxes() "px")
-		// .style("fill", "red")
-		// .attr("x", xaxes(50))
-		// .attr("y", yaxes(200))
-
-		// console.log(d3.max(onlyitalian, d => {d["Height (cm)"]}))
 }
 
-function update() {
+function update(step) {
+	
 	d3.select("#framework")
-	.attr("width", figWidth + "px")
-	.attr("height", figHeight + "px")
+		.attr("width", figWidth + "px")
+		.attr("height", figHeight + "px")
 
-	var xaxes = d3.scaleLinear()
-				.range([0, figWidth])
-				.domain(d3.extent(onlyitalian, d => d["Width (cm)"]))
 
-	var yaxes = d3.scaleLinear()
-				.range([figHeight, 0])
-				.domain(d3.extent(onlyitalian, d => d["Height (cm)"]))
+	if (step == 0) {
+    	makeAxes(true, d3.extent(onlyitalian, d => d["Height (cm)"]), d3.extent(onlyitalian, d => d["Width (cm)"]));
+		d3.selectAll("rect")
+		.attr("height", 10)
+		.attr("width", 10)
+		  .attr("ry", 10)
+			.attr("rx", 10)
+			.attr("y", (d) => { 
+				if ( d["Height (cm)"] ) {
+					return  yaxes(d["Height (cm)"])
+				} 
 
-	d3.select("#x-axis").attr("transform", "translate(0," + figHeight + ")").call(d3.axisBottom(xaxes)) 
-	d3.select("#y-axis").attr("transform", "translate(20, 0)").call(d3.axisLeft(yaxes)) 
+			})
+			.attr("x", (d) => { 
+				if ( d["Width (cm)"] ) {
+					return  xaxes(d["Width (cm)"])
+				} 
+			})
+	}
+	else if (step == 1) {
+
+
+	makeAxes(true, [0,50], [0,50]);
+		d3.selectAll("rect")
+		.attr("ry", 10)
+		.attr("height", 10)
+		.attr("width", 10)
+		.attr("rx", 10)
+		.attr("y", (d) => { 
+				if ( d["Height (cm)"] ) {
+					return  yaxes(d["Height (cm)"])
+				} 
+
+			})
+			.attr("x", (d) => { 
+				if ( d["Width (cm)"] ) {
+					return  xaxes(d["Width (cm)"])
+				} 
+			})
+
+	}
+
+	else  {
+		makeAxes(false)
+		var rects = d3.selectAll("rect");
+	// for all the ones that didnt get any data, exit and remove them from the page
+
+		rects
+			// .transition()
+			// .duration(2000)
+			// .ease(d3.easeCubic)
+			.attr('height', d => figHeight - yaxes(d.value))
+			.attr('width', xaxes.bandwidth())
+			.attr('rx',  0)
+			.attr('ry', 0)
+			.attr('y', d => yaxes(d.value))
+			.attr("x", d => xaxes(d.key))
+
+	}
+
+
+}
+
+function zoomIn(isTrue) {
+
+if (isTrue) {
+	makeAxes(true, [0,50], [0,50]);
 
 	d3.selectAll("rect")
-	.attr("ry", (d) => { 
-			if ( d["Height (cm)"]) {
-				return  yaxes(d["Height (cm)"]) == 0 ? 10 : yaxes(d["Height (cm)"])
-			} 
-			if (true) {}
-
-
-		})
-		.attr("rx", (d) => { 
-			if ( d["Width (cm)"] ) {
-				return  xaxes(d["Width (cm)"])
-			} 
-		})
+	.transition()
+	.duration(2000)
+	.ease(d3.easeCubic)
+	    .attr("ry", 10)
+		.attr("rx", 10)
 		.attr("y", (d) => { 
 			if ( d["Height (cm)"] ) {
 				return  yaxes(d["Height (cm)"])
@@ -191,21 +237,9 @@ function update() {
 			} 
 		})
 
+} else {
 
-}
-
-function zoomIn() {
-
-	var xaxes = d3.scaleLinear()
-				.range([0, figWidth])
-				.domain([0, 50])
-
-	var yaxes = d3.scaleLinear()
-				.range([figHeight, 0])
-				.domain([0, 50])
-
-	d3.select("#x-axis").attr("transform", "translate(0," + figHeight + ")").call(d3.axisBottom(xaxes)) 
-	d3.select("#y-axis").attr("transform", "translate(20, 0)").call(d3.axisLeft(yaxes)) 
+	makeAxes(true, d3.extent(onlyitalian, d => d["Height (cm)"]), d3.extent(onlyitalian, d => d["Width (cm)"]));
 
 	d3.selectAll("rect")
 	.transition()
@@ -228,46 +262,98 @@ function zoomIn() {
 
 }
 
+}
+
 function drawBarChart () {
 
-	var xaxes = d3.scaleBand()
-				.range([0, figWidth])
-				.domain(topten.map(d => d.key))
+	makeAxes(false);
+	
+	d3.select("#x-axis").transition()
+		.duration(2000)
+		.ease(d3.easeCubic)
+		.attr("transform", "translate(0," + figHeight + ")").call(d3.axisBottom(xaxes)) 
 
-	var yaxes = d3.scaleLinear()
-				.range([figHeight, 0])
-				.domain(d3.extent(topten, d => d.value))
+	d3.select("#y-axis")
+		.attr("transform", "translate(20, 0)").transition()
+		.duration(2000)
+		.ease(d3.easeCubic)
+		.call(d3.axisLeft(yaxes))
 
-
-	d3.select("#x-axis").attr("transform", "translate(0," + figHeight + ")").call(d3.axisBottom(xaxes)) 
-	d3.select("#y-axis").attr("transform", "translate(20, 0)").call(d3.axisLeft(yaxes)) 
-    console.log(d3.selectAll("rect"))
 	// grab all the rects and give them the new data
-	d3.selectAll("rect")
-		.data(topten)
-		// for all the ones that didnt get any data, exit and remove them from the page
-		.exit().remove();
+	var rects = d3.selectAll("rect");
+	// for all the ones that didnt get any data, exit and remove them from the page
 
-		// .attr("y", (d) => { 
-		// 	if ( d["Height (cm)"] ) {
-		// 		return  yaxes(d["Height (cm)"])
-		// 	} 
+	var rectsAll = rects.data(topten);
 
-		// })
-		// .attr("x", (d) => { 
-		// 	if ( d["Width (cm)"] ) {
-		// 		return  xaxes(d["Width (cm)"])
-		// 	} 
-		// })
+		rectsAll
+		.transition()
+		.duration(2000)
+		.ease(d3.easeCubic)
+		.attr('height', d => figHeight - yaxes(d.value))
+		.attr('width', xaxes.bandwidth())
+		.attr('rx',  0)
+		.attr('ry', 0)
+		.attr('y', d => yaxes(d.value))
+		.attr("x", d => xaxes(d.key))
+	    
+		//one thing we want to do to the rectangles which is remove the oens we dont want
+	    rectsAll.exit().remove();
+		
+		//take the variable and do things to the rectangles 
+	
 		
 
+		//in case your new dataset is bigger then your previous dataset and you need to add new elements 
+		// rects.enter().append("rect")
 
 
 
 }
 
+
+
+
+function redrawScatter() {
+
+	makeAxes(true, [0,50], [0,50])
+
+	var rects = g.selectAll("rect");
+	// for all the ones that didnt get any data, exit and remove them from the page
+
+	
+		rects.data(onlyitalian).enter().append("rect").merge(rects)
+			.attr("width", 10)
+		.attr("height", 10)
+
+		.transition()
+		.duration(2000)
+		.ease(d3.easeCubic)
+		.attr("ry", 10)
+		.attr("rx", 10)
+		.attr("y", (d) => { 
+			if ( d["Height (cm)"] ) {
+				return  yaxes(d["Height (cm)"])
+			} 
+
+		})
+		.attr("x", (d) => { 
+			if ( d["Width (cm)"] ) {
+				return  xaxes(d["Width (cm)"])
+			} 
+		})
+	
+	
+		//one thing we want to do to the rectangles which is remove the oens we dont want
+
+		
+
+}
+
+
 // scrollama event handlers
 function handleStepEnter(response) { 
+
+	console.log(response.direction, response.index)
 
 	window.addEventListener("resize", e => { 
 		//we have to feed the already set dimentions from flex fox in the css into d3
@@ -275,22 +361,32 @@ function handleStepEnter(response) {
 		figWidth = d3.select("figure").node().getBoundingClientRect().width
 		figHeight = d3.select("figure").node().getBoundingClientRect().height
 
-		update();
+		update(response.index);
 		// console.log(d3.select("figure"))
 	})
 
-   console.log("step is ", response.index)
-
+   
 	steps.classed('is-active', function (d, i) {
 				return i === response.index;
 			})
-	if (response.index == 0) {
+	if (response.index == 0 && response.direction === "down") {
 		setup(); 
 		drawScatterplott();
 	}  
 
-	if (response.index == 1) {
-		zoomIn();
+	if (response.index == 0 && response.direction === "up") {
+		zoomIn(false);
+	}  
+
+	
+
+	if (response.index === 1 && response.direction === "up") {
+
+		redrawScatter()
+	}
+
+	if (response.index == 1 && response.direction === "down") {
+		zoomIn(true);
 	}  
 
 	if (response.index == 2) {
