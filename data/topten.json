@@ -1,0 +1,42 @@
+[
+  {
+    "key": "Dutch",
+    "value": 1502
+  },
+  {
+    "key": "Swiss",
+    "value": 1746
+  },
+  {
+    "key": "Russian",
+    "value": 1892
+  },
+  {
+    "key": "Japanese",
+    "value": 2187
+  },
+  {
+    "key": "Italian",
+    "value": 2493
+  },
+  {
+    "key": "Spanish",
+    "value": 2977
+  },
+  {
+    "key": "British",
+    "value": 5177
+  },
+  {
+    "key": "German",
+    "value": 8065
+  },
+  {
+    "key": "French",
+    "value": 16892
+  },
+  {
+    "key": "American",
+    "value": 51638
+  }
+]
