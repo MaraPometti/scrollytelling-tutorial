@@ -20,28 +20,33 @@ var topten;
 var scroller = scrollama();
 
 // empty data variable global
-var dataset;
+//var dataset;
+d3.json('./data/topten.json', function(data){
+	topten = data 
+
+})
 
 // were loading the data which takes a few seconds
-d3.json('https://github.com/MuseumofModernArt/collection/blob/master/Artworks.json', function(data){
+d3.json('./data/italians.json', function(data){
 
-	dataset = data; 
-	
-	filterData = dataset.filter(d => d["Height (cm)"] != undefined && d["Width (cm)"] != undefined && d["Nationality"] != "" )
-  	onlyitalian = filterData.filter(d => d["Nationality"] == "Italian" &&  d["Height (cm)"] > 0 && d["Width (cm)"] > 0 )
-  	countsum = d3.nest()
-  				.key(d => d["Nationality"])
-  				.rollup(function (d) { return d.length; })
-  				.entries(filterData)
-
-  	topten = countsum.sort( function (a,b) { return a.value - b.value}).slice(768,778)
-  	console.log(topten.map(d => d.key))
+	onlyitalian = data; 
 	init();
 
 	
 })
 
+	
+	// filterData = dataset.filter(d => d["Height (cm)"] != undefined && d["Width (cm)"] != undefined && d["Nationality"] != "" )
+ //  	onlyitalian = filterData.filter(d => d["Nationality"] == "Italian" &&  d["Height (cm)"] > 0 && d["Width (cm)"] > 0 )
+ //  	countsum = d3.nest()
+ //  				.key(d => d["Nationality"])
+ //  				.rollup(function (d) { return d.length; })
+ //  				.entries(filterData)
 
+ //  	topten = countsum.sort( function (a,b) { return a.value - b.value}).slice(768,778)
+ //  	// console.log(topten.map(d => d.key))
+
+ //  	console.log(JSON.stringify(topten))
 
 function init() {
 
